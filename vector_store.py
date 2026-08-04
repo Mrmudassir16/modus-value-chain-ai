@@ -8,17 +8,93 @@ except ImportError:
 
 import os
 import chromadb
-from sentence_transformers import SentenceTransformer
 from config import CHROMA_PATH, DB_PATH
+
+class VectorWrapper:
+    def __init__(self, vector):
+        self.vector = vector
+    def tolist(self):
+        return self.vector
+
+class GeminiEmbeddingWrapper:
+    def __init__(self, api_key):
+        self.api_key = api_key
+
+    def encode(self, text):
+        import requests
+        headers = {"Content-Type": "application/json"}
+        url = f"https://generativelanguage.googleapis.com/v1beta/models/text-embedding-004:embedContent?key={self.api_key}"
+        
+        if isinstance(text, str):
+            payload = {
+                "model": "models/text-embedding-004",
+                "content": {
+                    "parts": [{"text": text}]
+                }
+            }
+            try:
+                r = requests.post(url, headers=headers, json=payload, timeout=15)
+                if r.status_code == 200:
+                    res = r.json()
+                    vector = res["embedding"]["values"]
+                    return VectorWrapper(vector)
+            except Exception as e:
+                print(f"Error calling Gemini Embedding API: {e}")
+            # Fallback to dummy vector if API call fails
+            return VectorWrapper([0.0] * 768)
+        else:
+            # Batch encode
+            results = []
+            for t in text:
+                results.append(self.encode(t))
+            return results
 
 # Lazy load model to speed up startup time in scripts
 _model = None
 
 def get_embedding_model():
     global _model
-    if _model is None:
-        # Load from HF cache, which we verified contains 'all-MiniLM-L6-v2'
+    if _model is not None:
+        return _model
+
+    # Check for Gemini API key to use external API embeddings and save memory
+    api_key = os.environ.get("GEMINI_API_KEY", "")
+    if not api_key:
+        try:
+            from database import get_settings
+            settings = get_settings()
+            api_key = settings.get("gemini_key", "")
+        except Exception:
+            pass
+            
+    if api_key:
+        print("Using Gemini API text-embedding-004 for vector search (memory-optimized).")
+        _model = GeminiEmbeddingWrapper(api_key)
+        return _model
+
+    # Fallback to local sentence-transformers
+    print("No Gemini API key found. Falling back to local SentenceTransformer...")
+    try:
+        from sentence_transformers import SentenceTransformer
         _model = SentenceTransformer('all-MiniLM-L6-v2')
+    except ImportError:
+        print("sentence-transformers not installed. Using dummy hash-based embedding fallback.")
+        # Dummy fallback encoder to prevent crash
+        class DummyEmbeddingWrapper:
+            def encode(self, text):
+                import hashlib
+                if isinstance(text, str):
+                    # generate a deterministic mock vector of size 384
+                    hash_val = hashlib.sha256(text.encode('utf-8')).digest()
+                    vector = []
+                    for i in range(384):
+                        val = (hash_val[i % len(hash_val)] / 255.0) - 0.5
+                        vector.append(val)
+                    return VectorWrapper(vector)
+                else:
+                    return [self.encode(t) for t in text]
+        _model = DummyEmbeddingWrapper()
+        
     return _model
 
 def get_chroma_client():
