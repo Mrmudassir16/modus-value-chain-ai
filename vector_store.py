@@ -1,3 +1,11 @@
+# System sqlite3 override for ChromaDB compatibility on Linux deployment environments (e.g. Render)
+try:
+    __import__('pysqlite3')
+    import sys
+    sys.modules['sqlite3'] = sys.modules.pop('pysqlite3')
+except ImportError:
+    pass
+
 import os
 import chromadb
 from sentence_transformers import SentenceTransformer

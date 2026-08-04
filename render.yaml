@@ -1,0 +1,28 @@
+# Render Blueprint configuration for MODUS — Value Chain AI
+services:
+  - type: web
+    name: modus-value-chain-ai
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: gunicorn app:app
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.10.12
+      - key: FLASK_SECRET_KEY
+        generateValue: true
+      - key: GEMINI_API_KEY
+        sync: false
+        placeholder: "Enter your Gemini API key (optional, for AI generation and translation)"
+      - key: OPENROUTER_API_KEY
+        sync: false
+        placeholder: "Enter your OpenRouter API key (optional, for LLM backup)"
+
+    # PERSISTENT STORAGE CONFIGURATION:
+    # Free tier instances on Render do not support persistent disks.
+    # If you are on a paid service plan, uncomment the 'disk' section below
+    # to ensure that your SQLite database and ChromaDB vector store persist across deploys.
+    #
+    # disk:
+    #   name: modus-data-disk
+    #   mountPath: /opt/render/project/src/instance
+    #   sizeGB: 10
