@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block title %}AI Assistant - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">Conversational AI Assistant</h2>
+            <p class="text-secondary">Consult the enterprise reasoning engine. Every recommendation is generated dynamically by combining database structured details with vector-searched research evidence.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Chat Panel -->
+        <div class="col-lg-8 mb-4">
+            <div class="chat-container">
+                <!-- Chat Panel Header -->
+                <div class="d-flex justify-content-between align-items-center p-3 border-bottom border-secondary border-opacity-50 bg-black bg-opacity-20">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="position-relative d-inline-block">
+                            <i class="bi bi-robot fs-4 text-info"></i>
+                            <span class="position-absolute top-0 start-100 translate-middle p-1 bg-success border border-light rounded-circle"></span>
+                        </span>
+                        <div>
+                            <h6 class="mb-0 fw-semibold">Modus AI Reasoning Engine</h6>
+                            <span class="small text-muted" style="font-size: 0.75rem;">Verified database constraints active</span>
+                        </div>
+                    </div>
+                    <button id="clearChatBtn" class="btn btn-sm btn-outline-danger rounded-pill"><i class="bi bi-trash"></i> Reset Session</button>
+                </div>
+                
+                <!-- Chat Messages Logs -->
+                <div class="chat-messages" id="chatMessages">
+                    <!-- Loaded dynamically by chat.js -->
+                </div>
+                
+                <!-- Chat Input area -->
+                <form id="chatForm" class="chat-input-area">
+                    <input type="text" id="chatInput" class="form-control bg-dark text-light border-secondary" placeholder="Ask about priorities, high-risk processes, or ask for evidence..." required autocomplete="off">
+                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-send-fill"></i></button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Sidebar Cheat Sheet/Guides -->
+        <div class="col-lg-4">
+            <div class="glass-card mb-4">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-lightbulb text-warning me-2"></i>Sample Inquiries</h5>
+                <p class="small text-secondary mb-3">Test the system's dynamic analysis using these recommended query patterns:</p>
+                <div id="suggestedQuestionsList" class="list-group list-group-flush bg-transparent">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+
+            <div class="glass-card bg-black bg-opacity-25 border-info border-opacity-25">
+                <h6 class="fw-semibold mb-2 text-info"><i class="bi bi-info-circle me-1"></i> RAG Trace Safeguards</h6>
+                <p class="small text-secondary m-0">The reasoning toggle shows you the raw facts retrieved from SQLite and ChromaDB vector search before the answer is compiled, ensuring complete traceability to stored enterprise knowledge.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/chat.js') }}"></script>
+<script>
+    function setQuickQuery(queryText) {
+        const input = document.getElementById("chatInput");
+        if (input) {
+            input.value = queryText;
+            input.focus();
+        }
+    }
+</script>
+{% endblock %}

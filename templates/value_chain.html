@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+
+{% block title %}Value Chain Explorer - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-3">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">Value Chain Explorer</h2>
+            <p class="text-secondary">Drill down into each stage of the industry's value chain to map operational processes and AI capabilities.</p>
+        </div>
+    </div>
+
+    <!-- Timeline of Stages -->
+    <div class="row mb-2">
+        <div class="col-12">
+            <div class="stages-timeline" id="stagesTimelineContainer">
+                <!-- Dynamically populated stages timeline steps -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Search & Active Stage Description -->
+    <div class="row mb-4 align-items-center">
+        <div class="col-md-7 mb-2">
+            <div class="p-3 bg-black bg-opacity-25 rounded border border-secondary border-opacity-50">
+                <h4 class="fw-semibold text-primary mb-1" id="stageTitleHeader">Intake & Onboarding</h4>
+                <p class="small text-secondary mb-0" id="stageDescHeader">Loading stage description...</p>
+            </div>
+        </div>
+        <div class="col-md-5 mb-2">
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                <input type="text" id="processSearch" class="form-control bg-dark text-light border-secondary" placeholder="Filter processes, problems, opportunities...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Processes Grid Container -->
+    <div class="row" id="processesContainer">
+        <!-- Dynamically rendered process cards -->
+    </div>
+</div>
+
+<!-- Explain Recommendation Modal -->
+<div class="modal fade" id="explainModal" tabindex="-1" aria-labelledby="explainModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-dark text-light border border-secondary border-opacity-50 shadow-lg" style="background-color: #0f172a !important;">
+      <div class="modal-header border-secondary border-opacity-25">
+        <h5 class="modal-title text-primary" id="explainModalLabel"><i class="bi bi-patch-question-fill text-info me-2"></i>Explainable AI (XAI) Recommendation Report</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body" id="explainModalBody">
+         <!-- Populated dynamically by JS -->
+      </div>
+      <div class="modal-footer border-secondary border-opacity-25">
+        <button type="button" class="btn btn-secondary rounded-pill px-4" data-bs-dismiss="modal">Close Report</button>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/value_chain.js') }}"></script>
+{% endblock %}

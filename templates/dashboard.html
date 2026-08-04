@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">Industry Value Chain Intelligence</h2>
+            <p class="text-secondary">Enterprise assessment map linking business problems to AI solutions and research evidence.</p>
+        </div>
+    </div>
+
+    <!-- KPI Summary Row -->
+    <div class="row mb-4">
+        <!-- Stages Count -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-diagram-3 me-2"></i>Value Chain Stages</span>
+                <span id="kpiStages" class="kpi-value">0</span>
+            </div>
+        </div>
+        <!-- Processes Count -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-gear me-2"></i>Business Processes</span>
+                <span id="kpiProcesses" class="kpi-value">0</span>
+            </div>
+        </div>
+        <!-- High Priority Opps -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-lightning-charge me-2"></i>High-Priority Opportunities</span>
+                <span id="kpiHighPri" class="kpi-value">0</span>
+            </div>
+        </div>
+        <!-- Risk Alert -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-exclamation-triangle me-2"></i>Risk Exposure Summary</span>
+                <span id="kpiRisks" class="kpi-value">0 High / 0 Med</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Expanded MODUS Challenge KPI Summary Row -->
+    <div class="row mb-4">
+        <!-- Highest ROI -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-cash-coin me-2"></i>Highest ROI Process</span>
+                <span id="kpiHighestROI" class="kpi-value" style="font-size: 0.95rem; margin-top: 1rem; color: #14b8a6; background: none; -webkit-text-fill-color: initial; line-height: 1.4; word-break: break-word;">Loading...</span>
+            </div>
+        </div>
+        <!-- Most Automatable -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-robot me-2"></i>Most Automatable Process</span>
+                <span id="kpiMostAutomatable" class="kpi-value" style="font-size: 0.95rem; margin-top: 1rem; color: #6366f1; background: none; -webkit-text-fill-color: initial; line-height: 1.4; word-break: break-word;">Loading...</span>
+            </div>
+        </div>
+        <!-- Average Confidence & Risk -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-percent me-2"></i>Avg Confidence / Risk</span>
+                <span id="kpiConfidenceRisk" class="kpi-value" style="font-size: 1.6rem; margin-top: 0.8rem;">0% / 0.0</span>
+            </div>
+        </div>
+        <!-- Readiness & Evidence Coverage -->
+        <div class="col-sm-6 col-xl-3 mb-3">
+            <div class="glass-card kpi-card">
+                <span class="text-secondary fw-semibold small uppercase"><i class="bi bi-shield-check me-2"></i>Readiness / Research Coverage</span>
+                <span id="kpiReadinessCoverage" class="kpi-value" style="font-size: 1.6rem; margin-top: 0.8rem;">0% / 0%</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row -->
+    <div class="row">
+        <!-- Heatmap -->
+        <div class="col-lg-8 mb-4">
+            <div class="glass-card h-100">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-bar-chart-steps me-2 text-primary"></i>Opportunity Priority Heatmap by Stage</h5>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="priorityHeatmapChart"></canvas>
+                </div>
+            </div>
+        </div>
+        <!-- Risk Breakdown -->
+        <div class="col-lg-4 mb-4">
+            <div class="glass-card h-100">
+                <h5 class="fw-semibold mb-3"><i class="bi bi-pie-chart-fill me-2 text-accent-secondary"></i>Risk Severity Breakdown</h5>
+                <div style="height: 320px; position: relative;">
+                    <canvas id="riskDoughnutChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Strategic Alignment Card -->
+    <div class="row">
+        <div class="col-12 mb-4">
+            <div class="glass-card">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                    <h5 class="fw-semibold m-0"><i class="bi bi-shield-check me-2 text-success"></i>Core Strategic Directives</h5>
+                    <a href="{{ url_for('value_chain') }}" class="btn btn-sm btn-outline-primary rounded-pill">Explore Value Chain <i class="bi bi-arrow-right"></i></a>
+                </div>
+                <p class="text-secondary mb-3">The application systematically prioritizes opportunities by assessing the business problem severity, the maturity of matching AI capabilities, and documented research benefits. View details below or consult the interactive AI Assistant for semantic queries and citation lookups.</p>
+                <div class="row text-center border-top border-secondary-subtle pt-3">
+                    <div class="col-md-4 border-end border-secondary-subtle py-2">
+                        <span class="d-block text-secondary small">RAG Pipeline Verification</span>
+                        <span class="fw-semibold text-info"><i class="bi bi-check-circle-fill"></i> Vector Evidence Active</span>
+                    </div>
+                    <div class="col-md-4 border-end border-secondary-subtle py-2">
+                        <span class="d-block text-secondary small">Industry Adaptability</span>
+                        <span class="fw-semibold text-accent-secondary"><i class="bi bi-arrow-repeat"></i> Zero-Code Dynamic Schema</span>
+                    </div>
+                    <div class="col-md-4 py-2">
+                        <span class="d-block text-secondary small">Model Integrity</span>
+                        <span class="fw-semibold text-warning"><i class="bi bi-shield-lock"></i> Strict RAG Enforcement</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>
+{% endblock %}

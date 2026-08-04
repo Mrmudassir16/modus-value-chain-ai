@@ -1,0 +1,102 @@
+{% extends "base.html" %}
+
+{% block title %}System Architecture - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block head %}
+<!-- Mermaid.js for architecture diagrams -->
+<script src="https://cdn.jsdelivr.net/npm/mermaid/dist/mermaid.min.js"></script>
+<script>
+    mermaid.initialize({
+        startOnLoad: true,
+        theme: 'dark',
+        themeVariables: {
+            primaryColor: '#6366f1',
+            primaryTextColor: '#fff',
+            lineColor: '#14b8a6',
+            textColor: '#f8fafc'
+        }
+    });
+</script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">System Runtime Architecture</h2>
+            <p class="text-secondary">Enterprise-grade implementation trace mapping technical components, data storage schemas, and AI RAG pipelines.</p>
+        </div>
+    </div>
+
+    <div class="row mb-4">
+        <!-- Architecture Diagram Card -->
+        <div class="col-xl-8 mb-4">
+            <div class="glass-card h-100">
+                <h5 class="fw-semibold mb-4 text-primary"><i class="bi bi-diagram-3-fill me-2"></i>Component Pipeline Diagram</h5>
+                <div class="d-flex justify-content-center align-items-center py-4 bg-black bg-opacity-25 rounded border border-secondary border-opacity-25" style="overflow-x: auto;">
+                    <div class="mermaid" style="min-width: 500px;">
+                        graph TD
+                            User([Enterprise User / Admin]) -->|Interacts| UI["Frontend Client<br>(HTML5, ES6 JS, CSS Variables)"]
+                            UI -->|REST JSON / Multipart API| Flask["REST API Service<br>(Flask Web Server)"]
+                            
+                            subgraph BusinessLayer["Business Logic Layer (Services)"]
+                                Flask -->|Calculate Priority| PriEngine["Priority Engine<br>(Weighted Math Classifier)"]
+                                Flask -->|Calculate Confidence| ConfEngine["Confidence Engine<br>(Semantic & Trust Weighted)"]
+                                Flask -->|Dynamic Translating| TransService["Translation Service<br>(SQLite Caching)"]
+                                Flask -->|Automated Analysis| AIAnalysis["AI Analysis Service<br>(LLM Synthesizer)"]
+                            end
+
+                            subgraph DataLayer["Data & Indexing Layer"]
+                                AIAnalysis -->|RAG Prompts| AILayer["AI RAG Orchestrator<br>(ai_engine.py)"]
+                                Flask -->|Prompt Query| AILayer
+                                AILayer -->|Dense Vector Index| VectorStore["Vector Store (ChromaDB)<br>all-MiniLM-L6-v2 Embeddings"]
+                                AILayer -->|Case & Metadata Queries| SQLite["SQLite Enterprise DB<br>(modus.db)"]
+                                VectorStore -->|Supporting Evidence| AILayer
+                                SQLite -->|Context Tables| AILayer
+                            end
+                            
+                            style User fill:#a5b4fc,stroke:#6366f1,stroke-width:2px,color:#0f172a
+                            style UI fill:#1e1b4b,stroke:#6366f1,stroke-width:1px,color:#f8fafc
+                            style Flask fill:#0f172a,stroke:#14b8a6,stroke-width:1px,color:#f8fafc
+                            style PriEngine fill:#312e81,stroke:#6366f1,stroke-width:1px,color:#f8fafc
+                            style ConfEngine fill:#312e81,stroke:#6366f1,stroke-width:1px,color:#f8fafc
+                            style TransService fill:#312e81,stroke:#6366f1,stroke-width:1px,color:#f8fafc
+                            style AIAnalysis fill:#312e81,stroke:#6366f1,stroke-width:1px,color:#f8fafc
+                            style AILayer fill:#064e3b,stroke:#10b981,stroke-width:1px,color:#f8fafc
+                            style VectorStore fill:#083344,stroke:#06b6d4,stroke-width:1px,color:#f8fafc
+                            style SQLite fill:#083344,stroke:#0d9488,stroke-width:1px,color:#f8fafc
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Architecture Descriptions -->
+        <div class="col-xl-4 mb-4">
+            <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                <div>
+                    <h5 class="fw-semibold mb-3 text-accent-secondary"><i class="bi bi-shield-check me-2"></i>Layered Design System</h5>
+                    <div class="mb-4">
+                        <strong class="d-block small text-secondary-emphasis">1. Frontend Client</strong>
+                        <span class="small text-secondary">Modular layout utilizing custom CSS variables for dark/light themes, rendering responsive charts via Chart.js, and integrating live RAG messaging logs.</span>
+                    </div>
+                    <div class="mb-4">
+                        <strong class="d-block small text-secondary-emphasis">2. Business Service Layer</strong>
+                        <span class="small text-secondary">Encapsulates priority score calculations (weighted AP, BI, ROI, CX, Risk metrics), confidence engine parameters, and caching translators.</span>
+                    </div>
+                    <div class="mb-4">
+                        <strong class="d-block small text-secondary-emphasis">3. Vector Database (ChromaDB)</strong>
+                        <span class="small text-secondary">Computes local sentence embeddings via <code>all-MiniLM-L6-v2</code> SentenceTransformer, bypassing external CDNs. Retrieves matching segments with cosine proximity scores.</span>
+                    </div>
+                    <div>
+                        <strong class="d-block small text-secondary-emphasis">4. Relational Database (SQLite)</strong>
+                        <span class="small text-secondary">Persists structured metadata, sequence lists, and conversation histories. Linked via Cascading Foreign Keys.</span>
+                    </div>
+                </div>
+                <div class="pt-3 border-top border-secondary border-opacity-20 text-center">
+                    <span class="badge bg-secondary text-info"><i class="bi bi-lock-fill"></i> Enterprise Ready Pipeline</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,480 @@
+{% extends "base.html" %}
+
+{% block title %}Admin Panel - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-12">
+            <h2 class="fw-bold mb-1">Administrator Control Panel</h2>
+            <p class="text-secondary">Configure intelligence engine parameters, upload research assets, and dynamically customize industry value chain models.</p>
+        </div>
+    </div>
+
+    <!-- AJAX Alert Placeholder -->
+    <div id="adminAlertPlaceholder"></div>
+
+    <div class="row">
+        <!-- Settings Sidebar tabs -->
+        <div class="col-md-3 mb-4">
+            <div class="glass-card p-0 overflow-hidden">
+                <div class="list-group list-group-flush bg-transparent" id="adminTabs" role="tablist">
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis active" id="tab-settings-btn" data-bs-toggle="tab" data-bs-target="#tab-settings" type="button" role="tab">
+                        <i class="bi bi-cpu me-2"></i> LLM Configuration
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-industry-btn" data-bs-toggle="tab" data-bs-target="#tab-industry" type="button" role="tab">
+                        <i class="bi bi-plus-circle me-2"></i> Add Industry
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-stage-btn" data-bs-toggle="tab" data-bs-target="#tab-stage" type="button" role="tab">
+                        <i class="bi bi-diagram-2 me-2"></i> Add Stage
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-process-btn" data-bs-toggle="tab" data-bs-target="#tab-process" type="button" role="tab">
+                        <i class="bi bi-gear me-2"></i> Add Process
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-opp-btn" data-bs-toggle="tab" data-bs-target="#tab-opp" type="button" role="tab">
+                        <i class="bi bi-lightning-charge me-2"></i> Add Opportunity
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-research-btn" data-bs-toggle="tab" data-bs-target="#tab-research" type="button" role="tab">
+                        <i class="bi bi-cloud-upload me-2"></i> Upload Research
+                    </button>
+                    <button class="list-group-item list-group-item-action bg-transparent text-secondary-emphasis" id="tab-manage-btn" data-bs-toggle="tab" data-bs-target="#tab-manage" type="button" role="tab">
+                        <i class="bi bi-database me-2"></i> Manage Database
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab contents -->
+        <div class="col-md-9">
+            <div class="tab-content" id="adminTabContent">
+                
+                <!-- Tab 1: LLM Settings -->
+                <div class="tab-pane fade show active" id="tab-settings" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-cpu-fill me-2"></i>Configure AI Reasoning Settings</h5>
+                        <form id="settingsForm">
+                            <div class="mb-3">
+                                <label for="llmProvider" class="form-label small fw-semibold text-secondary">Active LLM Provider</label>
+                                <select id="llmProvider" class="form-select bg-dark text-light border-secondary">
+                                    <option value="ollama">Local Ollama (Offline Mode)</option>
+                                    <option value="openrouter">OpenRouter Free Models</option>
+                                    <option value="gemini">Google Gemini API</option>
+                                </select>
+                            </div>
+
+                            <!-- Ollama configurations -->
+                            <div id="ollamaConfigDiv" class="mb-3">
+                                <div class="mb-3">
+                                    <label for="ollamaHost" class="form-label small fw-semibold text-secondary">Ollama Host Address</label>
+                                    <input type="text" id="ollamaHost" class="form-control bg-dark text-light border-secondary" placeholder="http://localhost:11434">
+                                </div>
+                            </div>
+
+                            <!-- API Key config (Shared for OpenRouter/Gemini) -->
+                            <div id="openrouterConfigDiv" class="mb-3 d-none">
+                                <div class="mb-3">
+                                    <label id="openrouterKeyLabel" for="openrouterKey" class="form-label small fw-semibold text-secondary">API Authorization Key</label>
+                                    <input type="password" id="openrouterKey" class="form-control bg-dark text-light border-secondary" placeholder="sk-or-...">
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="llmModelSelect" class="form-label small fw-semibold text-secondary">Model Selection</label>
+                                <select id="llmModelSelect" class="form-select bg-dark text-light border-secondary">
+                                    <!-- Dynamic options populated by JS -->
+                                </select>
+                            </div>
+
+                            <div id="customModelDiv" class="mb-3 d-none">
+                                <label for="llmModel" class="form-label small fw-semibold text-secondary">Custom Model Identifier Tag</label>
+                                <input type="text" id="llmModel" class="form-control bg-dark text-light border-secondary" placeholder="Type custom model name...">
+                                <div class="form-text text-muted">E.g., <code>llama3.2</code>, <code>mistral</code> (Ollama) or <code>meta-llama/llama-3-8b-instruct:free</code> (OpenRouter).</div>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-save me-1"></i> Save LLM Configuration</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 2: Add Industry -->
+                <div class="tab-pane fade" id="tab-industry" role="tabpanel">
+                    <div class="row">
+                        <!-- Option A: Manual creation -->
+                        <div class="col-lg-6 mb-3">
+                            <div class="glass-card h-100">
+                                <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-plus-circle-fill me-2"></i>Option A: Create Industry Manually</h5>
+                                <form id="addIndustryForm">
+                                    <div class="mb-3">
+                                        <label for="indName" class="form-label small fw-semibold text-secondary">Industry Name</label>
+                                        <input type="text" name="name" id="indName" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Healthcare, Banking" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="indDesc" class="form-label small fw-semibold text-secondary">Industry Description</label>
+                                        <textarea name="description" id="indDesc" rows="3" class="form-control bg-dark text-light border-secondary" placeholder="Brief summary of operations, scope, and services..."></textarea>
+                                    </div>
+                                    <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i> Create Industry</button>
+                                </form>
+                            </div>
+                        </div>
+                        <!-- Option B: CSV Ingestion -->
+                        <div class="col-lg-6 mb-3">
+                            <div class="glass-card h-100">
+                                <h5 class="fw-semibold mb-3 text-accent-secondary"><i class="bi bi-filetype-csv me-2"></i>Option B: Dynamic CSV Ingestion</h5>
+                                <p class="small text-secondary mb-3">Import a full industry, its stages, and processes in one go. The system will dynamically generate RAG opportunities and compute priority ratings automatically.</p>
+                                <form id="uploadCsvIndustryForm" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <label for="csvIndName" class="form-label small fw-semibold text-secondary">Industry Name</label>
+                                        <input type="text" name="name" id="csvIndName" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Healthcare, Retail" required>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="csvIndDesc" class="form-label small fw-semibold text-secondary">Industry Description</label>
+                                        <textarea name="description" id="csvIndDesc" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Scope details..."></textarea>
+                                    </div>
+                                    <div class="mb-3">
+                                        <label for="csvFile" class="form-label small fw-semibold text-secondary">CSV File</label>
+                                        <input type="file" name="file" id="csvFile" class="form-control bg-dark text-light border-secondary" accept=".csv" required>
+                                    </div>
+                                    <button type="submit" class="btn btn-accent px-4"><i class="bi bi-upload me-1"></i> Ingest Industry CSV</button>
+                                </form>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Tab 3: Add Stage -->
+                <div class="tab-pane fade" id="tab-stage" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-diagram-2-fill me-2"></i>Add Value Chain Stage</h5>
+                        <form id="addStageForm">
+                            <div class="mb-3">
+                                <label for="stageIndustrySelect" class="form-label small fw-semibold text-secondary">Target Industry</label>
+                                <select name="industry_id" id="stageIndustrySelect" class="form-select bg-dark text-light border-secondary" required>
+                                    <option value="">-- Select Industry --</option>
+                                </select>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-9 mb-3">
+                                    <label for="stageName" class="form-label small fw-semibold text-secondary">Stage Name</label>
+                                    <input type="text" name="name" id="stageName" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Client Intake, Underwriting" required>
+                                </div>
+                                <div class="col-md-3 mb-3">
+                                    <label for="stageSeq" class="form-label small fw-semibold text-secondary">Sequence Number</label>
+                                    <input type="number" name="sequence" id="stageSeq" class="form-control bg-dark text-light border-secondary" value="1" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="stageDesc" class="form-label small fw-semibold text-secondary">Stage Description</label>
+                                <textarea name="description" id="stageDesc" rows="3" class="form-control bg-dark text-light border-secondary" placeholder="Describe the objectives and bounds of this value chain node..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i> Create Stage</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 4: Add Process -->
+                <div class="tab-pane fade" id="tab-process" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-gear-fill me-2"></i>Add Business Process & Problem</h5>
+                        <form id="addProcessForm">
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="processIndustrySelect" class="form-label small fw-semibold text-secondary">Select Industry</label>
+                                    <select id="processIndustrySelect" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="processStageSelect" class="form-label small fw-semibold text-secondary">Select Value Chain Stage</label>
+                                    <select name="stage_id" id="processStageSelect" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="">-- Select Stage --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="processName" class="form-label small fw-semibold text-secondary">Process Name</label>
+                                <input type="text" name="name" id="processName" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Conflict Vetting, Risk Audits" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="processDesc" class="form-label small fw-semibold text-secondary">Process Description</label>
+                                <textarea name="description" id="processDesc" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Outline what occurs during this process..."></textarea>
+                            </div>
+                            <div class="mb-3">
+                                <label for="processProblem" class="form-label small fw-semibold text-secondary">Business Problem / Core Pain Point</label>
+                                <textarea name="problem" id="processProblem" rows="3" class="form-control bg-dark text-light border-secondary" placeholder="Describe the current manual inefficiencies, costs, or risk exposures..." required></textarea>
+                            </div>
+                            <div class="mb-3 form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="auto_analyze" id="processAutoAnalyze" value="true" checked>
+                                <label class="form-check-label small fw-semibold text-secondary" for="processAutoAnalyze">Auto-Generate AI Opportunity details using AI Analysis</label>
+                            </div>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i> Create Process</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 5: Add Opportunity -->
+                <div class="tab-pane fade" id="tab-opp" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-lightning-fill me-2"></i>Map AI Opportunity & Capabilities</h5>
+                        <form id="addOppForm">
+                            <div class="row">
+                                <div class="col-md-4 mb-3">
+                                    <label for="oppIndustrySelect" class="form-label small fw-semibold text-secondary">Select Industry</label>
+                                    <select id="oppIndustrySelect" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="oppStageSelect" class="form-label small fw-semibold text-secondary">Select Stage</label>
+                                    <select id="oppStageSelect" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="">-- Select Stage --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="oppProcessSelect" class="form-label small fw-semibold text-secondary">Select Process</label>
+                                    <select name="process_id" id="oppProcessSelect" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="">-- Select Process --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="oppName" class="form-label small fw-semibold text-secondary">Opportunity Name</label>
+                                <input type="text" name="name" id="oppName" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Semantic Precedent Search Engine" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="oppDesc" class="form-label small fw-semibold text-secondary">Opportunity Description</label>
+                                <textarea name="description" id="oppDesc" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Describe how AI solves the problem..." required></textarea>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="oppTech" class="form-label small fw-semibold text-secondary">Technology Capability</label>
+                                    <input type="text" name="technology" id="oppTech" class="form-control bg-dark text-light border-secondary" placeholder="E.g., LLM RAG, Sentence Vectors" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="oppBenefit" class="form-label small fw-semibold text-secondary">Core Business Benefit</label>
+                                    <input type="text" name="benefit" id="oppBenefit" class="form-control bg-dark text-light border-secondary" placeholder="E.g., 90% reduction in research times" required>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-8 mb-3">
+                                    <label for="oppRisk" class="form-label small fw-semibold text-secondary">Risk Exposure Description</label>
+                                    <input type="text" name="risk" id="oppRisk" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Retrieval of outdated rules" required>
+                                </div>
+                                <div class="col-md-4 mb-3">
+                                    <label for="oppRiskSeverity" class="form-label small fw-semibold text-secondary">Risk Severity</label>
+                                    <select name="risk_severity" id="oppRiskSeverity" class="form-select bg-dark text-light border-secondary" required>
+                                        <option value="Low">Low</option>
+                                        <option value="Medium">Medium</option>
+                                        <option value="High">High</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppROI" class="form-label small fw-semibold text-secondary">ROI (1-10)</label>
+                                    <input type="number" name="roi" id="oppROI" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppAP" class="form-label small fw-semibold text-secondary">Automation Potential (1-10)</label>
+                                    <input type="number" name="automation_potential" id="oppAP" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppBI" class="form-label small fw-semibold text-secondary">Business Impact (1-10)</label>
+                                    <input type="number" name="business_impact" id="oppBI" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppIC" class="form-label small fw-semibold text-secondary">Implementation Cost (1-10)</label>
+                                    <input type="number" name="implementation_cost" id="oppIC" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppCX" class="form-label small fw-semibold text-secondary">Complexity (1-10)</label>
+                                    <input type="number" name="complexity" id="oppCX" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                                <div class="col-md-4 mb-2">
+                                    <label for="oppRS" class="form-label small fw-semibold text-secondary">Risk Score (1-10)</label>
+                                    <input type="number" name="risk_score" id="oppRS" min="1" max="10" class="form-control bg-dark text-light border-secondary" value="5" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="oppRationale" class="form-label small fw-semibold text-secondary">Priority Rationale</label>
+                                <textarea name="rationale" id="oppRationale" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Justify the score and priority placement..."></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-check-circle me-1"></i> Map AI Opportunity</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 6: Upload Research -->
+                <div class="tab-pane fade" id="tab-research" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-cloud-arrow-up-fill me-2"></i>Index Research Source & Embed Content</h5>
+                        <form id="addResearchForm" enctype="multipart/form-data">
+                            <div class="mb-3">
+                                <label for="researchIndustrySelect" class="form-label small fw-semibold text-secondary">Select Target Industry</label>
+                                <select name="industry_id" id="researchIndustrySelect" class="form-select bg-dark text-light border-secondary" required>
+                                    <option value="">-- Select Industry --</option>
+                                </select>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resTitle" class="form-label small fw-semibold text-secondary">Document Title</label>
+                                <input type="text" name="title" id="resTitle" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Legal RAG Performance Study" required>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="resUrl" class="form-label small fw-semibold text-secondary">Document URL (Optional)</label>
+                                    <input type="url" name="url" id="resUrl" class="form-control bg-dark text-light border-secondary" placeholder="https://...">
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="resDate" class="form-label small fw-semibold text-secondary">Publication Date (Optional)</label>
+                                    <input type="date" name="date_published" id="resDate" class="form-control bg-dark text-light border-secondary">
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="resAuthor" class="form-label small fw-semibold text-secondary">Document Author / Publisher</label>
+                                    <input type="text" name="author" id="resAuthor" class="form-control bg-dark text-light border-secondary" placeholder="E.g., National Health Authority, Industry Standards Group" required>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="resTrust" class="form-label small fw-semibold text-secondary">Trust Score (1-100)</label>
+                                    <input type="number" name="trust_score" id="resTrust" min="1" max="100" class="form-control bg-dark text-light border-secondary" value="95" required>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resCitation" class="form-label small fw-semibold text-secondary">Academic Citation String</label>
+                                <input type="text" name="citation" id="resCitation" class="form-control bg-dark text-light border-secondary" placeholder="E.g., Miller et al. (2025). IEEE Transactions, 12." required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="resSummary" class="form-label small fw-semibold text-secondary">Executive Summary (Quick display in drawers)</label>
+                                <textarea name="summary" id="resSummary" rows="2" class="form-control bg-dark text-light border-secondary" placeholder="Brief outline of research methodology and findings..."></textarea>
+                            </div>
+                            
+                            <!-- Document Ingestion Mode -->
+                            <div class="row mb-3">
+                                <div class="col-md-6 border-end border-secondary border-opacity-50">
+                                    <label for="resFile" class="form-label small fw-semibold text-secondary">Option A: Upload Document File (.txt, .pdf)</label>
+                                    <input type="file" name="file" id="resFile" class="form-control bg-dark text-light border-secondary" accept=".pdf,.txt">
+                                    <div class="form-text text-muted">Supports raw text and PDF conversion. Parses text locally.</div>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="resContent" class="form-label small fw-semibold text-secondary">Option B: Paste Raw Text Content</label>
+                                    <textarea name="content" id="resContent" rows="4" class="form-control bg-dark text-light border-secondary" placeholder="Paste full article text segments to embed..."></textarea>
+                                </div>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary px-4"><i class="bi bi-cloud-upload-fill me-1"></i> Index & Embed Document</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Tab 7: Manage Database -->
+                <div class="tab-pane fade" id="tab-manage" role="tabpanel">
+                    <div class="glass-card">
+                        <h5 class="fw-semibold mb-3 text-primary"><i class="bi bi-database me-2"></i>Manage Enterprise Database Metadata</h5>
+                        <p class="text-secondary small mb-4">View existing metadata entries, update descriptions, and remove records dynamically.</p>
+                        
+                        <div class="mb-4">
+                            <label class="form-label small fw-semibold text-secondary-emphasis">1. Industries List</label>
+                            <div id="manageIndustriesList" class="list-group list-group-flush bg-transparent border border-secondary border-opacity-30 rounded p-2">
+                                <div class="text-center py-3 text-muted">Loading industries...</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 border-top border-secondary border-opacity-30 pt-3">
+                            <label class="form-label small fw-semibold text-secondary-emphasis">2. Value Chain Stages</label>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <select id="manageStageIndustrySelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="manageStagesList" class="list-group list-group-flush bg-transparent border border-secondary border-opacity-30 rounded p-2">
+                                <div class="text-center py-2 text-muted">Select an industry to list stages.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 border-top border-secondary border-opacity-30 pt-3">
+                            <label class="form-label small fw-semibold text-secondary-emphasis">3. Business Processes</label>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <select id="manageProcessIndustrySelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <select id="manageProcessStageSelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Stage --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="manageProcessesList" class="list-group list-group-flush bg-transparent border border-secondary border-opacity-30 rounded p-2">
+                                <div class="text-center py-2 text-muted">Select an industry and stage to list processes.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 border-top border-secondary border-opacity-30 pt-3">
+                            <label class="form-label small fw-semibold text-secondary-emphasis">4. AI Opportunities</label>
+                            <div class="row mb-3">
+                                <div class="col-md-6 mb-2">
+                                    <select id="manageOppIndustrySelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6 mb-2">
+                                    <select id="manageOppStageSelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Stage --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="manageOppsList" class="list-group list-group-flush bg-transparent border border-secondary border-opacity-30 rounded p-2">
+                                <div class="text-center py-2 text-muted">Select stage to list mapped opportunities.</div>
+                            </div>
+                        </div>
+
+                        <div class="mb-4 border-top border-secondary border-opacity-30 pt-3">
+                            <label class="form-label small fw-semibold text-secondary-emphasis">5. Research Documents</label>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <select id="manageResearchIndustrySelect" class="form-select form-select-sm bg-dark text-light border-secondary">
+                                        <option value="">-- Select Industry --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div id="manageResearchList" class="list-group list-group-flush bg-transparent border border-secondary border-opacity-30 rounded p-2">
+                                <div class="text-center py-2 text-muted">Select industry to list research papers.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Dialog for Edit Operations -->
+<div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content bg-secondary border border-secondary border-opacity-50 text-light shadow-lg">
+      <div class="modal-header border-secondary border-opacity-30">
+        <h5 class="modal-title text-primary" id="editModalLabel">Edit Metadata Segment</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <form id="editForm">
+        <div class="modal-body" id="editModalBody">
+           <!-- Loaded dynamically via JavaScript -->
+        </div>
+        <div class="modal-footer border-secondary border-opacity-30">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+          <button type="submit" class="btn btn-primary">Save Changes</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+{% endblock %}

@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Research Repository - Value Chain AI Opportunity Intelligence{% endblock %}
+
+{% block content %}
+<div class="container-fluid p-0">
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="fw-bold mb-1">Research & Evidence Repository</h2>
+            <p class="text-secondary" id="kbPageDescription">Explore verified legislative acts, Supreme Court judgments, Bar Council standards, and AI feasibility papers supporting opportunity mappings.</p>
+        </div>
+        <div class="col-md-4">
+            <div class="input-group">
+                <span class="input-group-text bg-dark border-secondary text-secondary"><i class="bi bi-search"></i></span>
+                <input type="text" id="researchSearchInput" class="form-control bg-dark text-light border-secondary" placeholder="Search title, citation, author, content...">
+            </div>
+        </div>
+    </div>
+
+    <!-- Research Documents Grid -->
+    <div class="row" id="researchGridContainer">
+        <!-- Loaded dynamically via JavaScript -->
+        <div class="col-12 text-center py-5">
+            <div class="spinner-border text-primary" role="status"></div>
+            <p class="text-muted small mt-2">Loading indexed research papers...</p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    let lastLoadedIndustryId = null;
+    let researchData = [];
+
+    document.addEventListener("DOMContentLoaded", () => {
+        window.addEventListener("industryChanged", (e) => {
+            const industryId = e.detail.id;
+            const industryName = e.detail.name;
+            
+            // Update page description dynamically to prevent hardcoded legal references for other industries
+            const descEl = document.getElementById("kbPageDescription");
+            if (descEl) {
+                if (industryName && industryName.toLowerCase().includes("legal")) {
+                    descEl.textContent = "Explore verified legislative acts, Supreme Court judgments, Bar Council standards, and AI feasibility papers supporting opportunity mappings.";
+                } else {
+                    descEl.textContent = `Explore verified standards, feasibility papers, and regulatory guidelines supporting opportunity mappings for ${industryName || "the active industry"}.`;
+                }
+            }
+            
+            loadResearchRepository(industryId);
+        });
+
+        // Set up local filtering
+        const searchInput = document.getElementById("researchSearchInput");
+        if (searchInput) {
+            searchInput.addEventListener("input", (e) => {
+                filterResearch(e.target.value.toLowerCase());
+            });
+        }
+        
+        // Handle potential edge case where industryChanged was already fired
+        if (typeof STATE !== "undefined" && STATE.selectedIndustryId) {
+            const descEl = document.getElementById("kbPageDescription");
+            if (descEl) {
+                if (STATE.selectedIndustryName && STATE.selectedIndustryName.toLowerCase().includes("legal")) {
+                    descEl.textContent = "Explore verified legislative acts, Supreme Court judgments, Bar Council standards, and AI feasibility papers supporting opportunity mappings.";
+                } else {
+                    descEl.textContent = `Explore verified standards, feasibility papers, and regulatory guidelines supporting opportunity mappings for ${STATE.selectedIndustryName || "the active industry"}.`;
+                }
+            }
+            loadResearchRepository(STATE.selectedIndustryId);
+        }
+    });
+
+    function loadResearchRepository(industryId) {
+        if (lastLoadedIndustryId === industryId) return;
+        lastLoadedIndustryId = industryId;
+
+        const container = document.getElementById("researchGridContainer");
+        if (!container) return;
+
+        // Retrieve lang from header selector if available
+        const lang = localStorage.getItem("modus_lang") || "en";
+
+        fetch(`/api/research/${industryId}?lang=${lang}`)
+            .then(res => res.json())
+            .then(sources => {
+                researchData = sources;
+                renderResearchCards(sources);
+            })
+            .catch(err => {
+                console.error("Error loading research:", err);
+                container.innerHTML = `<div class="col-12 text-center text-danger py-4">Failed to load research papers: ${err.message}</div>`;
+            });
+    }
+
+    function renderResearchCards(sources) {
+        const container = document.getElementById("researchGridContainer");
+        if (!container) return;
+
+        container.innerHTML = "";
+        if (sources.length === 0) {
+            container.innerHTML = `
+                <div class="col-12 text-center py-5 text-muted">
+                    No research documents indexed for this industry yet. Go to the Admin Panel to upload documents.
+                </div>
+            `;
+            return;
+        }
+
+        sources.forEach(src => {
+            const col = document.createElement("div");
+            col.className = "col-md-6 col-lg-4 mb-4 research-card-wrapper";
+            col.dataset.title = src.title.toLowerCase();
+            col.dataset.citation = (src.citation || "").toLowerCase();
+            col.dataset.author = (src.author || "").toLowerCase();
+            col.dataset.content = src.content.toLowerCase();
+
+            // Format trust score color indicator
+            let trustBadgeClass = "bg-success bg-opacity-10 text-success border border-success border-opacity-25";
+            if (src.trust_score < 95 && src.trust_score >= 90) {
+                trustBadgeClass = "bg-info bg-opacity-10 text-info border border-info border-opacity-25";
+            } else if (src.trust_score < 90) {
+                trustBadgeClass = "bg-warning bg-opacity-10 text-warning border border-warning border-opacity-25";
+            }
+
+            col.innerHTML = `
+                <div class="glass-card h-100 d-flex flex-column justify-content-between">
+                    <div>
+                        <div class="d-flex justify-content-between align-items-start mb-2">
+                            <span class="badge ${trustBadgeClass} px-2 py-1 small">Trust Score: ${src.trust_score}%</span>
+                            <span class="small text-muted" style="font-size: 0.75rem;"><i class="bi bi-calendar-event me-1"></i>${src.date_published || "N/A"}</span>
+                        </div>
+                        <h5 class="fw-semibold text-primary mb-2">${src.title}</h5>
+                        <p class="small text-secondary mb-3 text-secondary-emphasis" style="display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; height: 3.6rem;">${src.summary}</p>
+                        
+                        <div class="mb-3 p-2 bg-black bg-opacity-20 rounded border border-secondary border-opacity-25">
+                            <div class="d-flex align-items-center justify-content-between mb-1">
+                                <span class="small fw-semibold text-secondary-emphasis" style="font-size: 0.7rem;">AUTHORITY</span>
+                                <span class="small text-muted" style="font-size: 0.7rem;">${src.author}</span>
+                            </div>
+                            <div class="d-flex align-items-center justify-content-between">
+                                <span class="small fw-semibold text-secondary-emphasis" style="font-size: 0.7rem;">CITATION</span>
+                                <span class="small text-info text-truncate font-monospace" style="font-size: 0.7rem; max-width: 180px;">${src.citation || "No Citation"}</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2 mt-2">
+                        ${src.url ? `<a href="${src.url}" target="_blank" class="btn btn-sm btn-outline-info rounded-pill flex-grow-1"><i class="bi bi-box-arrow-up-right me-1"></i> Open URL</a>` : `<button class="btn btn-sm btn-outline-secondary rounded-pill flex-grow-1" disabled><i class="bi bi-link-45deg"></i> No URL</button>`}
+                        <button class="btn btn-sm btn-primary rounded-pill px-3" onclick="viewContentSegment('${src.id}')"><i class="bi bi-eye"></i></button>
+                    </div>
+                </div>
+            `;
+            container.appendChild(col);
+        });
+    }
+
+    function filterResearch(query) {
+        document.querySelectorAll(".research-card-wrapper").forEach(card => {
+            const title = card.dataset.title || "";
+            const citation = card.dataset.citation || "";
+            const author = card.dataset.author || "";
+            const content = card.dataset.content || "";
+
+            if (title.includes(query) || citation.includes(query) || author.includes(query) || content.includes(query)) {
+                card.style.display = "block";
+            } else {
+                card.style.display = "none";
+            }
+        });
+    }
+
+    function viewContentSegment(id) {
+        const doc = researchData.find(item => String(item.id) === String(id));
+        if (!doc) return;
+
+        // Reuse evidence drawer from base.html to show full text segment
+        const drawer = document.getElementById("evidenceDrawer");
+        if (!drawer) return;
+
+        document.getElementById("drawerOppName").textContent = "Detailed Document Index";
+        const body = document.getElementById("drawerEvidenceBody");
+        
+        body.innerHTML = `
+            <div class="evidence-item mb-3">
+                <h6 class="mb-1 text-primary-emphasis fw-bold">${doc.title}</h6>
+                <div class="my-2 p-2 bg-black bg-opacity-25 rounded border border-secondary border-opacity-20 font-monospace small">
+                    <span class="d-block text-secondary">Author: ${doc.author}</span>
+                    <span class="d-block text-secondary">Date: ${doc.date_published}</span>
+                    <span class="d-block text-secondary">Trust: ${doc.trust_score}%</span>
+                    <span class="d-block text-secondary text-truncate">Citation: ${doc.citation || "N/A"}</span>
+                </div>
+                <p class="small text-secondary mb-0" style="white-space: pre-wrap; line-height: 1.6;">${doc.content}</p>
+            </div>
+            ${doc.url ? `<a href="${doc.url}" target="_blank" class="btn btn-sm btn-info w-100 rounded-pill"><i class="bi bi-box-arrow-up-right me-1"></i> Open Verification Document</a>` : ""}
+        `;
+
+        drawer.classList.add("open");
+    }
+</script>
+{% endblock %}
